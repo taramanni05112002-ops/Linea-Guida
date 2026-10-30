@@ -1,0 +1,1409 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b6b46"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>Linea Guida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}
+/* Layout: mappa a tutto schermo, barra di ricerca e pannello inferiore (come nelle mappe che conosci); in guida si aggiunge il banner verde con la svolta e la barra dell'arrivo. */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --surface2: #eaeef3; --fg: #1a1f26; --muted: #596270; --line: #d8dde4;
+  --accent: #1a73e8; --accent-fg: #ffffff; --accent-soft: #e4eefc;
+  --nav: #0b6b46; --nav-fg: #ffffff; --nav-soft: rgba(0, 0, 0, .2);
+  --warn: #c5221f; --warn-fg: #ffffff; --ok: #137333;
+  --map-bg: #e8ebf0; --map-grid: #d3d9e1; --map-label: #5a6472;
+  --route: #1a73e8; --route-edge: #ffffff; --route-done: #98a3b3; --tile-veil: rgba(0, 0, 0, 0);
+  --shadow: 0 1px 3px rgba(18, 28, 42, .28), 0 4px 16px rgba(18, 28, 42, .16);
+  --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --gutL: max(16px, env(safe-area-inset-left, 0px));
+  --gutR: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1217; --surface: #1a2029; --surface2: #252d38; --fg: #e8ecf1; --muted: #9ba6b4; --line: #303a47;
+    --accent: #8ab4f8; --accent-fg: #0a1a33; --accent-soft: #1f2f48;
+    --nav: #0f7650; --nav-soft: rgba(0, 0, 0, .25);
+    --warn: #f28b82; --warn-fg: #3a0907; --ok: #81c995;
+    --map-bg: #1b222c; --map-grid: #2a3340; --map-label: #9ba6b4;
+    --route: #6ea8fe; --route-edge: #0c1626; --route-done: #55657a; --tile-veil: rgba(8, 12, 20, .55);
+    --shadow: 0 1px 3px rgba(0, 0, 0, .6), 0 4px 16px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1217; --surface: #1a2029; --surface2: #252d38; --fg: #e8ecf1; --muted: #9ba6b4; --line: #303a47;
+  --accent: #8ab4f8; --accent-fg: #0a1a33; --accent-soft: #1f2f48;
+  --nav: #0f7650; --nav-soft: rgba(0, 0, 0, .25);
+  --warn: #f28b82; --warn-fg: #3a0907; --ok: #81c995;
+  --map-bg: #1b222c; --map-grid: #2a3340; --map-label: #9ba6b4;
+  --route: #6ea8fe; --route-edge: #0c1626; --route-done: #55657a; --tile-veil: rgba(8, 12, 20, .55);
+  --shadow: 0 1px 3px rgba(0, 0, 0, .6), 0 4px 16px rgba(0, 0, 0, .45);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.35;
+  overflow: hidden; -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
+}
+button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+svg.ic { display: block; flex: none; }
+
+#app { position: relative; height: 100%; overflow: hidden; background: var(--map-bg); }
+#map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.layer { position: absolute; left: 0; right: 0; z-index: 5; pointer-events: none; }
+.layer > * { pointer-events: auto; }
+
+/* barra in alto (home) */
+.topbar { top: 12px; display: flex; gap: 10px; padding: 0 var(--gutR) 0 var(--gutL); }
+.pill {
+  flex: 1; min-width: 0; height: 52px; border-radius: 26px; background: var(--surface); box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px; padding: 0 16px; text-align: left; font-size: 16px;
+}
+.pill .pill-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill .dim { color: var(--muted); }
+.round {
+  width: 48px; height: 48px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow);
+  display: grid; place-items: center; color: var(--fg);
+}
+.round.accent { background: var(--accent); color: var(--accent-fg); }
+
+/* pannello inferiore (home) */
+#homeBottom { bottom: 0; display: flex; flex-direction: column; gap: 10px; }
+.floatrow { pointer-events: none; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; padding: 0 var(--gutR) 0 var(--gutL); }
+.floatrow > * { pointer-events: auto; }
+.floatcol { display: flex; flex-direction: column; gap: 10px; }
+.sheet {
+  background: var(--surface); border-radius: 22px 22px 0 0; box-shadow: var(--shadow);
+  padding: 8px var(--gutR) 18px var(--gutL);
+}
+.grab { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 12px; }
+.sheet h1 { font-size: 22px; font-weight: 500; margin: 0 0 2px; letter-spacing: -.1px; text-wrap: balance; }
+.meta { margin: 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.note {
+  margin: 10px 0 0; padding: 8px 12px; border-radius: 12px; background: var(--accent-soft); color: var(--fg);
+  font-size: 13px; line-height: 1.4;
+}
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.btn {
+  height: 46px; padding: 0 18px; border-radius: 23px; display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; font-weight: 500; font-size: 15px; border: 1px solid var(--line); color: var(--accent); background: var(--surface);
+}
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); grid-column: 1 / -1; height: 52px; font-size: 17px; }
+.btn.danger { color: var(--warn); }
+
+/* guida: banner e chip */
+.navtop { top: 0; display: flex; flex-direction: column; gap: 8px; }
+.banner {
+  background: var(--nav); color: var(--nav-fg); padding: 14px var(--gutR) 14px var(--gutL); display: flex; gap: 16px; align-items: center;
+  border-radius: 0 0 20px 20px; box-shadow: var(--shadow);
+}
+.banner.off { background: var(--warn); color: var(--warn-fg); }
+.bicon { width: 60px; height: 60px; flex: none; display: grid; place-items: center; }
+.btext { min-width: 0; flex: 1; }
+.bdist { font-size: 34px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+.binst { font-size: 18px; font-weight: 500; margin-top: 2px; text-wrap: balance; }
+.then, .stopchip {
+  align-self: flex-start; margin-left: var(--gutL); display: inline-flex; align-items: center; gap: 8px; border-radius: 16px;
+  padding: 7px 12px; font-size: 14px; font-weight: 500; box-shadow: var(--shadow);
+}
+.then { background: var(--nav); color: var(--nav-fg); }
+.stopchip { background: var(--surface); color: var(--fg); }
+.stopchip .ic { color: var(--accent); }
+.stopchip b { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+#navBottom { bottom: 0; display: flex; flex-direction: column; gap: 10px; }
+.speed {
+  width: 62px; height: 62px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow); display: grid; place-content: center;
+  text-align: center; line-height: 1;
+}
+.speed b { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.speed span { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: .3px; }
+.navbar {
+  background: var(--surface); border-radius: 22px 22px 0 0; box-shadow: var(--shadow);
+  padding: 14px var(--gutR) 16px var(--gutL); display: flex; align-items: center; gap: 12px; position: relative;
+}
+.navbar .prog { position: absolute; left: 22px; right: 22px; top: 0; height: 3px; border-radius: 2px; background: var(--surface2); overflow: hidden; }
+.navbar .prog i { display: block; height: 100%; width: 0; background: var(--route); }
+.eta { flex: 1; min-width: 0; text-align: center; }
+.eta b { display: block; font-size: 24px; font-weight: 500; color: var(--ok); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.eta span { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sim {
+  background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); margin: 0 var(--gutR) 0 var(--gutL);
+  padding: 10px 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.sim .lbl { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; }
+.sim input[type=range] { flex: 1 1 120px; min-width: 0; accent-color: var(--accent); height: 28px; }
+.chips { display: flex; gap: 6px; }
+.chip {
+  min-width: 40px; height: 34px; padding: 0 10px; border-radius: 17px; border: 1px solid var(--line); font-size: 14px; font-weight: 500;
+  color: var(--fg); font-variant-numeric: tabular-nums;
+}
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* pannelli a tutto schermo */
+.drawer {
+  position: absolute; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column;
+}
+.dhead { display: flex; align-items: center; gap: 8px; padding: 10px var(--gutR) 10px calc(var(--gutL) - 8px); background: var(--surface); box-shadow: 0 1px 0 var(--line); }
+.dhead h2 { margin: 0; font-size: 19px; font-weight: 500; flex: 1; min-width: 0; }
+.dhead .round { box-shadow: none; background: transparent; }
+.dbody { flex: 1; overflow-y: auto; padding: 14px var(--gutR) 32px var(--gutL); -webkit-overflow-scrolling: touch; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.card {
+  width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.card[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.card .grow { flex: 1; min-width: 0; }
+.card .t { font-weight: 500; font-size: 16px; overflow-wrap: anywhere; }
+.card .s { color: var(--muted); font-size: 13px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.import {
+  width: 100%; height: 56px; border-radius: 16px; border: 1.5px dashed var(--accent); color: var(--accent); display: flex; align-items: center;
+  justify-content: center; gap: 10px; font-weight: 500; font-size: 16px; margin-bottom: 14px; background: var(--surface);
+}
+.help { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 12px 2px 0; }
+.step {
+  width: 100%; text-align: left; display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-bottom: 1px solid var(--line);
+}
+.step .sic { width: 42px; height: 42px; border-radius: 50%; background: var(--nav); color: var(--nav-fg); display: grid; place-items: center; flex: none; }
+.step.stop .sic { background: var(--accent-soft); color: var(--accent); width: 34px; height: 34px; margin: 0 4px; }
+.step .grow { flex: 1; min-width: 0; }
+.step .t { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+.step.stop .t { font-weight: 400; }
+.step .s { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.step .at { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
+
+.tag {
+  position: absolute; left: var(--gutL); top: 76px; z-index: 4; background: color-mix(in srgb, var(--surface) 88%, transparent); border-radius: 10px;
+  padding: 4px 9px; font-size: 12px; color: var(--muted); pointer-events: none;
+}
+.toast {
+  position: absolute; left: 50%; bottom: 160px; transform: translateX(-50%); z-index: 40; max-width: min(92vw, 420px); background: #202833; color: #fff;
+  padding: 11px 16px; border-radius: 12px; font-size: 14px; box-shadow: var(--shadow); text-align: center; text-wrap: balance;
+}
+@media (prefers-reduced-motion: no-preference) { .toast { animation: tin .18s ease-out; } @keyframes tin { from { opacity: 0; transform: translate(-50%, 8px); } } }
+@media (max-width: 380px) { .bdist { font-size: 30px; } .binst { font-size: 16px; } .bicon { width: 52px; height: 52px; } }
+
+</style></head>
+<body>
+<div id="app">
+  <canvas id="map" aria-label="Mappa della linea"></canvas>
+  <div id="scaleTag" class="tag" hidden></div>
+
+  <!-- home -->
+  <header id="topbar" class="layer topbar">
+    <button id="btnLines" class="pill" aria-label="Scegli la linea">
+      <span data-ic="menu"></span>
+      <span class="pill-text" id="pillName">Linea</span>
+      <span class="dim" data-ic="chevron"></span>
+    </button>
+  </header>
+
+  <div id="homeBottom" class="layer">
+    <div class="floatrow">
+      <span></span>
+      <div class="floatcol">
+        <button id="zIn" class="round" aria-label="Ingrandisci" data-ic="plus"></button>
+        <button id="zOut" class="round" aria-label="Riduci" data-ic="minus"></button>
+      </div>
+    </div>
+    <section class="sheet" id="sheetHome">
+      <div class="grab"></div>
+      <h1 id="lineTitle">Linea</h1>
+      <p class="meta" id="lineMeta"></p>
+      <p class="note" id="lineNote" hidden></p>
+      <div class="actions">
+        <button id="btnStart" class="btn primary"><span data-ic="nav" data-size="20"></span><span id="btnStartLbl">Avvia</span></button>
+        <button id="btnPreview" class="btn"><span data-ic="play" data-size="20"></span>Anteprima</button>
+        <button id="btnSteps" class="btn"><span data-ic="list" data-size="20"></span>Svolte</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- guida -->
+  <div id="navTop" class="layer navtop" hidden>
+    <div id="navBanner" class="banner">
+      <div id="navIcon" class="bicon"></div>
+      <div class="btext"><div id="navDist" class="bdist"></div><div id="navText" class="binst"></div></div>
+    </div>
+    <div id="offBanner" class="banner off" hidden>
+      <div id="offArrow" class="bicon"></div>
+      <div class="btext"><div id="offDist" class="bdist"></div><div class="binst">Fuori percorso. Raggiungi la linea</div></div>
+    </div>
+    <div id="navThen" class="then" hidden></div>
+    <div id="stopChip" class="stopchip" hidden></div>
+  </div>
+
+  <div id="navBottom" class="layer" hidden>
+    <div class="floatrow">
+      <div id="speed" class="speed"><b id="speedVal">0</b><span>km/h</span></div>
+      <div class="floatcol">
+        <button id="btnRecenter" class="round accent" aria-label="Ricentra la mappa" data-ic="locate" hidden></button>
+        <button id="btnMute" class="round" aria-label="Disattiva la voce" data-ic="volume"></button>
+      </div>
+    </div>
+    <div id="simPanel" class="sim" hidden>
+      <button id="simPlay" class="round" aria-label="Pausa" data-ic="pause" style="width:40px;height:40px;box-shadow:none;background:var(--surface2)"></button>
+      <span class="lbl">Anteprima</span>
+      <div class="chips" role="group" aria-label="Velocità dell'anteprima">
+        <button class="chip" data-mult="1" aria-pressed="true">1×</button>
+        <button class="chip" data-mult="2" aria-pressed="false">2×</button>
+        <button class="chip" data-mult="4" aria-pressed="false">4×</button>
+        <button class="chip" data-mult="8" aria-pressed="false">8×</button>
+      </div>
+      <input id="simSeek" type="range" min="0" max="1000" value="0" aria-label="Punto della linea">
+    </div>
+    <div class="navbar">
+      <div class="prog"><i id="progBar"></i></div>
+      <button id="btnExit" class="round" aria-label="Termina la guida" data-ic="close" style="box-shadow:none;background:var(--surface2)"></button>
+      <div class="eta"><b id="etaClock">--:--</b><span id="etaMeta"></span></div>
+      <button id="btnStepsNav" class="round" aria-label="Elenco delle svolte" data-ic="list" style="box-shadow:none;background:var(--surface2)"></button>
+    </div>
+  </div>
+
+  <!-- elenco linee -->
+  <section id="drawerLines" class="drawer" hidden>
+    <div class="dhead">
+      <button class="round" id="closeLines" aria-label="Chiudi" data-ic="back"></button>
+      <h2>Le tue linee</h2>
+    </div>
+    <div class="dbody">
+      <button class="import" id="btnImport"><span data-ic="upload"></span>Importa file KML, KMZ o GPX</button>
+      <input id="fileInput" type="file" multiple hidden>
+      <ul class="list" id="lineList"></ul>
+      <p class="help">Ogni percorso (LineString) del file diventa una linea. I punti (Point) vicini al percorso diventano le fermate e vengono annunciati durante la guida. Le linee importate restano salvate su questo telefono. La prima volta serve internet per aggiungere i nomi delle vie.</p>
+    </div>
+  </section>
+
+  <!-- elenco svolte -->
+  <section id="drawerSteps" class="drawer" hidden>
+    <div class="dhead">
+      <button class="round" id="closeSteps" aria-label="Chiudi" data-ic="back"></button>
+      <h2 id="stepsTitle">Svolte</h2>
+    </div>
+    <div class="dbody"><div id="stepsList"></div><p class="help" id="stepsHelp"></p></div>
+  </section>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+</div>
+
+<script>
+/* Linea Guida: geometria, lettura file, calcolo svolte, motore di navigazione. Nessun DOM. */
+'use strict';
+
+const D2R = Math.PI / 180, R2D = 180 / Math.PI, STEP = 4; // STEP: passo di ricampionamento in metri
+const normAngle = a => { a = ((a % 360) + 360) % 360; return a > 180 ? a - 360 : a; };
+const bearingXY = (dx, dy) => (Math.atan2(dx, dy) * R2D + 360) % 360; // 0 = nord, senso orario
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lc = s => s.charAt(0).toLowerCase() + s.slice(1);
+
+function makeProj(lat0, lon0) {
+  const kx = 111320 * Math.cos(lat0 * D2R), ky = 110574;
+  return {
+    toXY: (lat, lon) => [(lon - lon0) * kx, (lat - lat0) * ky],
+    toLL: (x, y) => [lat0 + y / ky, lon0 + x / kx],
+  };
+}
+function merc(lat, lon) {
+  const s = Math.sin(clamp(lat, -85, 85) * D2R);
+  return [(lon + 180) / 360, 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)];
+}
+
+/* ---------- formattazione ---------- */
+function fmtDist(m) {
+  if (m < 100) return Math.max(0, Math.round(m / 10) * 10) + ' m';
+  const r = Math.round(m / 50) * 50;
+  if (r < 1000) return r + ' m';
+  return (Math.round(m / 100) / 10).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' km';
+}
+function fmtDistSpeech(m) {
+  if (m < 100) return Math.max(10, Math.round(m / 10) * 10) + ' metri';
+  const r = Math.round(m / 50) * 50;
+  if (r < 1000) return r + ' metri';
+  return (Math.round(m / 100) / 10).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' chilometri';
+}
+function fmtKm(m) {
+  return (m / 1000).toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' km';
+}
+function fmtDur(sec) {
+  const m = Math.max(1, Math.round(sec / 60));
+  if (m < 60) return m + ' min';
+  const h = Math.floor(m / 60), mm = m % 60;
+  return h + ' h' + (mm ? ' ' + mm + ' min' : '');
+}
+
+/* ---------- lettura file ---------- */
+function decodeXml(s) {
+  return s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&apos;|&#39;/g, "'").replace(/&amp;/g, '&').trim();
+}
+function parseCoords(str) {
+  return str.trim().split(/\s+/).map(t => t.split(',').map(Number))
+    .filter(a => a.length >= 2 && isFinite(a[0]) && isFinite(a[1]) && Math.abs(a[1]) <= 90 && Math.abs(a[0]) <= 180)
+    .map(a => [a[0], a[1]]);
+}
+function parseKml(text) {
+  const lines = [], stops = [];
+  const re = /<Placemark\b[\s\S]*?<\/Placemark>/gi;
+  let m;
+  while ((m = re.exec(text))) {
+    const pm = m[0];
+    const nm = /<name>([\s\S]*?)<\/name>/i.exec(pm);
+    const name = nm ? decodeXml(nm[1]) : '';
+    const ls = [...pm.matchAll(/<LineString\b[\s\S]*?<coordinates>([\s\S]*?)<\/coordinates>/gi)];
+    if (ls.length) {
+      let all = [];
+      for (const l of ls) all = all.concat(parseCoords(l[1]));
+      if (all.length >= 2) lines.push({ name, coords: all });
+      continue;
+    }
+    const pt = /<Point\b[\s\S]*?<coordinates>([\s\S]*?)<\/coordinates>/i.exec(pm);
+    if (pt) {
+      const c = parseCoords(pt[1])[0];
+      if (c) stops.push({ name, lon: c[0], lat: c[1] });
+    }
+  }
+  return { lines, stops };
+}
+function parseGpx(text) {
+  const lines = [], stops = [];
+  const attr = (s, n) => { const r = new RegExp('\\b' + n + '="([^"]+)"', 'i').exec(s); return r ? parseFloat(r[1]) : NaN; };
+  for (const m of text.matchAll(/<(trk|rte)\b[\s\S]*?<\/\1>/gi)) {
+    const blk = m[0];
+    const nm = /<name>([\s\S]*?)<\/name>/i.exec(blk);
+    const coords = [...blk.matchAll(/<(?:trkpt|rtept)\b([^>]*)>/gi)]
+      .map(p => [attr(p[1], 'lon'), attr(p[1], 'lat')]).filter(c => isFinite(c[0]) && isFinite(c[1]));
+    if (coords.length >= 2) lines.push({ name: nm ? decodeXml(nm[1]) : '', coords });
+  }
+  for (const m of text.matchAll(/<wpt\b([^>]*)>([\s\S]*?)<\/wpt>/gi)) {
+    const lat = attr(m[1], 'lat'), lon = attr(m[1], 'lon');
+    const nm = /<name>([\s\S]*?)<\/name>/i.exec(m[2]);
+    if (isFinite(lat) && isFinite(lon)) stops.push({ name: nm ? decodeXml(nm[1]) : '', lat, lon });
+  }
+  return { lines, stops };
+}
+function parseGeoText(text) {
+  return /<gpx\b/i.test(text) ? parseGpx(text) : parseKml(text);
+}
+async function inflateRaw(bytes) {
+  const ds = new DecompressionStream('deflate-raw');
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function unzipKml(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let e = u8.length - 22;
+  while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('File ZIP non valido');
+  const n = dv.getUint16(e + 10, true);
+  let off = dv.getUint32(e + 16, true), found = null;
+  for (let i = 0; i < n; i++) {
+    if (dv.getUint32(off, true) !== 0x02014b50) break;
+    const method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+    const nlen = dv.getUint16(off + 28, true), xlen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true);
+    const lho = dv.getUint32(off + 42, true);
+    const name = new TextDecoder().decode(u8.subarray(off + 46, off + 46 + nlen));
+    if (/\.kml$/i.test(name) && (!found || /(^|\/)doc\.kml$/i.test(name))) found = { method, csize, lho };
+    off += 46 + nlen + xlen + clen;
+  }
+  if (!found) throw new Error('Nel KMZ non c\'è nessun file KML');
+  const start = found.lho + 30 + dv.getUint16(found.lho + 26, true) + dv.getUint16(found.lho + 28, true);
+  const data = u8.subarray(start, start + found.csize);
+  const raw = found.method === 0 ? data : await inflateRaw(data);
+  return new TextDecoder('utf-8').decode(raw);
+}
+async function readGeoFile(buf) {
+  const u8 = new Uint8Array(buf);
+  const text = (u8[0] === 0x50 && u8[1] === 0x4b) ? await unzipKml(buf) : new TextDecoder('utf-8').decode(u8);
+  return parseGeoText(text);
+}
+
+/* ---------- percorso ---------- */
+function segIndex(route, s) {
+  const c = route.cum;
+  let lo = 0, hi = route.n - 2;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (c[mid] <= s) lo = mid; else hi = mid - 1; }
+  return lo;
+}
+function pointAt(route, s) {
+  s = clamp(s, 0, route.length);
+  const i = segIndex(route, s), L = route.cum[i + 1] - route.cum[i], t = L ? (s - route.cum[i]) / L : 0;
+  const dx = route.x[i + 1] - route.x[i], dy = route.y[i + 1] - route.y[i];
+  return { x: route.x[i] + dx * t, y: route.y[i] + dy * t, i, t, heading: bearingXY(dx, dy) };
+}
+function mercAt(route, s) {
+  const p = pointAt(route, s);
+  return [route.mx[p.i] + (route.mx[p.i + 1] - route.mx[p.i]) * p.t, route.my[p.i] + (route.my[p.i + 1] - route.my[p.i]) * p.t];
+}
+function headingAt(route, s, span = 10) {
+  const a = pointAt(route, s - span), b = pointAt(route, s + span);
+  return bearingXY(b.x - a.x, b.y - a.y);
+}
+function projectRange(route, x, y, s0, s1, hdg) {
+  const i0 = segIndex(route, s0), i1 = segIndex(route, s1);
+  let best = null;
+  for (let i = i0; i <= i1 && i < route.n - 1; i++) {
+    const ax = route.x[i], ay = route.y[i], dx = route.x[i + 1] - ax, dy = route.y[i + 1] - ay, L2 = dx * dx + dy * dy;
+    const t = L2 ? clamp(((x - ax) * dx + (y - ay) * dy) / L2, 0, 1) : 0;
+    const px = ax + t * dx, py = ay + t * dy, dist = Math.hypot(x - px, y - py), sb = bearingXY(dx, dy);
+    let cost = dist;
+    if (hdg != null && Math.abs(normAngle(hdg - sb)) > 100) cost += 25; // penalizza il senso opposto
+    if (!best || cost < best.cost) best = { cost, dist, s: route.cum[i] + t * Math.sqrt(L2), i, t, px, py, heading: sb };
+  }
+  return best;
+}
+
+function buildRoute(name, coords, stops, opts) {
+  opts = opts || {};
+  const proj = makeProj(coords[0][1], coords[0][0]);
+  const x = [], y = [], lon = [], lat = [];
+  for (const c of coords) {
+    const p = proj.toXY(c[1], c[0]), n = x.length;
+    if (n && Math.hypot(p[0] - x[n - 1], p[1] - y[n - 1]) < 1.5) continue;
+    x.push(p[0]); y.push(p[1]); lon.push(c[0]); lat.push(c[1]);
+  }
+  if (x.length < 2) throw new Error('Percorso troppo corto');
+  const cum = [0];
+  for (let i = 1; i < x.length; i++) cum.push(cum[i - 1] + Math.hypot(x[i] - x[i - 1], y[i] - y[i - 1]));
+  const length = cum[cum.length - 1];
+  if (length < 50) throw new Error('Percorso troppo corto');
+  const mx = [], my = [];
+  for (let i = 0; i < x.length; i++) { const m = merc(lat[i], lon[i]); mx.push(m[0]); my.push(m[1]); }
+  const route = { name: name || 'Linea', synthetic: !!opts.synthetic, proj, x, y, lon, lat, mx, my, cum, length, n: x.length };
+  route.maneuvers = detectManeuvers(route);
+  route.stops = attachStops(route, stops || []);
+  route.bbox = [Math.min(...mx), Math.min(...my), Math.max(...mx), Math.max(...my)];
+  return route;
+}
+function attachStops(route, stops) {
+  const out = [];
+  for (const st of stops) {
+    const p = route.proj.toXY(st.lat, st.lon), m = projectRange(route, p[0], p[1], 0, route.length, null);
+    if (m && m.dist <= 40) {
+      const mm = merc(st.lat, st.lon);
+      out.push({ name: st.name || 'Fermata', s: m.s, lat: st.lat, lon: st.lon, mx: mm[0], my: mm[1] });
+    }
+  }
+  return out.sort((a, b) => a.s - b.s);
+}
+
+/* ---------- svolte ---------- */
+function resample(route) {
+  const n = Math.floor(route.length / STEP) + 1, rx = new Float64Array(n), ry = new Float64Array(n);
+  let seg = 0;
+  for (let k = 0; k < n; k++) {
+    const s = k * STEP;
+    while (seg < route.n - 2 && route.cum[seg + 1] < s) seg++;
+    const L = route.cum[seg + 1] - route.cum[seg], t = L ? clamp((s - route.cum[seg]) / L, 0, 1) : 0;
+    rx[k] = route.x[seg] + (route.x[seg + 1] - route.x[seg]) * t;
+    ry[k] = route.y[seg] + (route.y[seg + 1] - route.y[seg]) * t;
+  }
+  return { rx, ry, n };
+}
+const WORDS = ['', 'prima', 'seconda', 'terza', 'quarta'];
+function classify(net) {
+  const a = Math.abs(net);
+  if (a >= 160) return 'uturn';
+  if (a >= 130) return 'sharp';
+  if (a >= 55) return 'turn';
+  return 'slight';
+}
+function exitNumber(net) {
+  if (net >= 50 && net < 140) return 1;
+  if (net > -50 && net < 50) return 2;
+  if (net <= -50 && net > -140) return 3;
+  return 4;
+}
+function detectManeuvers(route) {
+  const ms = [{ type: 'depart', s: 0, angle: 0 }];
+  const { rx, ry, n } = resample(route);
+  if (n >= 12) {
+    const th = new Float64Array(n), d = new Float64Array(n - 1), P = new Float64Array(n);
+    for (let k = 0; k < n; k++) {
+      const a = Math.max(0, k - 2), b = Math.min(n - 1, k + 2);
+      th[k] = bearingXY(rx[b] - rx[a], ry[b] - ry[a]);
+    }
+    for (let k = 0; k < n - 1; k++) { d[k] = normAngle(th[k + 1] - th[k]); P[k + 1] = P[k] + d[k]; }
+    const sum = (k0, k1) => P[k1 + 1] - P[k0];
+    const THR = 3.0; // gradi per campione (4 m): oltre è una curva stretta
+    let runs = [];
+    for (let k = 0; k < n - 1; k++) {
+      if (Math.abs(d[k]) < THR) continue;
+      const sg = d[k] > 0 ? 1 : -1, last = runs[runs.length - 1];
+      if (last && last.sign === sg && k - last.k1 <= 3) last.k1 = k; else runs.push({ k0: k, k1: k, sign: sg });
+    }
+    for (const r of runs) r.sum = sum(r.k0, r.k1);
+    runs = runs.filter(r => Math.abs(r.sum) >= 12);
+    const clusters = [];
+    for (const r of runs) {
+      const c = clusters[clusters.length - 1];
+      if (c && (r.k0 - c[c.length - 1].k1) * STEP <= 30) c.push(r); else clusters.push([r]);
+    }
+    for (const cl of clusters) {
+      const first = cl[0], last = cl[cl.length - 1];
+      const kb = Math.max(0, first.k0 - 3), ka = Math.min(n - 1, last.k1 + 4);
+      const net = normAngle(th[ka] - th[kb]);
+      const ring = cl.find(r => r.sign < 0 && -r.sum >= 70 && (r.k1 - r.k0 + 1) * STEP >= 28);
+      const hasRight = cl.some(r => r.sign > 0 && r.sum >= 15);
+      if (cl.length >= 2 && ring && hasRight) {
+        ms.push({ type: 'roundabout', s: first.k0 * STEP, angle: net, exit: exitNumber(net) });
+        continue;
+      }
+      if (Math.abs(net) < 25) continue; // S o scarto laterale: nessuna istruzione
+      let tot = 0;
+      for (let k = first.k0; k <= last.k1; k++) tot += Math.abs(d[k]);
+      let acc = 0, kh = first.k0;
+      for (let k = first.k0; k <= last.k1; k++) { acc += Math.abs(d[k]); if (acc >= tot / 2) { kh = k; break; } }
+      ms.push({ type: classify(net), s: kh * STEP + STEP / 2, angle: net });
+    }
+  }
+  ms.push({ type: 'arrive', s: route.length, angle: 0 });
+  ms.sort((a, b) => a.s - b.s);
+  return ms;
+}
+function describe(m, speech) {
+  const side = m.angle > 0 ? 'destra' : 'sinistra';
+  const on = m.street ? ' su ' + m.street : '';
+  switch (m.type) {
+    case 'depart': return 'Inizia la linea';
+    case 'arrive': return speech ? 'Capolinea, sei arrivato' : 'Capolinea';
+    case 'slight': return 'Svolta leggermente a ' + side + on;
+    case 'turn': return 'Svolta a ' + side + on;
+    case 'sharp': return 'Svolta stretta a ' + side + on;
+    case 'uturn': return 'Fai inversione a U' + on;
+    case 'roundabout': return speech
+      ? 'Alla rotatoria prendi la ' + WORDS[m.exit] + ' uscita' + on
+      : 'Alla rotatoria prendi la ' + m.exit + 'ª uscita' + on;
+  }
+  return '';
+}
+
+/* ---------- nomi delle vie ---------- */
+// Punto sulla strada che si imbocca dopo la manovra: lì si chiede il nome della via.
+// Si resta prima della manovra successiva, così non si prende il nome di un'altra strada.
+function probePoint(route, i) {
+  const ms = route.maneuvers, m = ms[i], nxt = ms[i + 1];
+  const off = m.type === 'roundabout' ? 70 : 30, gap = nxt ? nxt.s - m.s : off * 2;
+  const s = clamp(m.s + Math.min(off, Math.max(10, gap * 0.6)), 0, Math.max(0, route.length - 3));
+  const p = pointAt(route, s), ll = route.proj.toLL(p.x, p.y);
+  return { lat: ll[0], lon: ll[1], key: ll[0].toFixed(5) + ',' + ll[1].toFixed(5) };
+}
+function applyStreets(route, names) {
+  let n = 0;
+  route.maneuvers.forEach((m, i) => {
+    if (m.type === 'depart' || m.type === 'arrive') return;
+    const nm = names && names[probePoint(route, i).key];
+    if (nm) { m.street = nm; n++; } else delete m.street;
+  });
+  return n;
+}
+function roadFromNominatim(j) {
+  if (!j || j.error) return '';
+  const a = j.address || {};
+  return String(a.road || a.pedestrian || a.footway || a.cycleway || a.path || j.name || '').trim();
+}
+function iconFor(m) {
+  if (m.type === 'slight' || m.type === 'turn' || m.type === 'sharp') return m.type + (m.angle > 0 ? '-r' : '-l');
+  return m.type;
+}
+function stopSpeech(name) {
+  return /^(fermata|capolinea)\b/i.test(name) ? name : 'Fermata ' + name;
+}
+function routeStats(route) {
+  const turns = route.maneuvers.filter(m => m.type !== 'depart' && m.type !== 'arrive').length;
+  return { km: route.length / 1000, minutes: Math.round(route.length / 6.1 / 60), turns, stops: route.stops.length };
+}
+
+/* ---------- linea dimostrativa ---------- */
+function demoRoute() {
+  let x = 0, y = 0, h = 0;
+  const pts = [[0, 0]];
+  const fwd = d => {
+    const n = Math.max(1, Math.round(d / 12));
+    for (let i = 0; i < n; i++) { x += Math.sin(h * D2R) * d / n; y += Math.cos(h * D2R) * d / n; pts.push([x, y]); }
+  };
+  const arc = (ang, r) => {
+    const n = Math.max(2, Math.round(Math.abs(ang) / 10)), da = ang / n, ds = r * Math.abs(da) * D2R;
+    for (let i = 0; i < n; i++) {
+      const hm = h + da / 2;
+      x += Math.sin(hm * D2R) * ds; y += Math.cos(hm * D2R) * ds; h += da; pts.push([x, y]);
+    }
+  };
+  fwd(350); arc(90, 12); fwd(420); arc(-35, 40); fwd(300);
+  arc(70, 14); arc(-140, 22); arc(70, 14); fwd(380);          // rotatoria, seconda uscita
+  arc(-90, 12); fwd(260); arc(90, 12); fwd(300);
+  arc(70, 14); arc(-250, 22); arc(70, 14); fwd(260);          // rotatoria, terza uscita
+  arc(150, 10); fwd(200); arc(180, 15); fwd(150);
+  const lat0 = 45.0, lon0 = 9.0, proj = makeProj(lat0, lon0);
+  const coords = pts.map(p => { const ll = proj.toLL(p[0], p[1]); return [ll[1], ll[0]]; });
+  const base = buildRoute('Linea dimostrativa', coords, [], { synthetic: true });
+  // nomi inventati, solo per mostrare come appaiono le indicazioni
+  const demoNames = ['Via Mazzini', 'Corso Italia', 'Viale della Stazione', 'Via Verdi', 'Via Dante', 'Via dei Mille', 'Via Manzoni', 'Via Cavour'];
+  base.maneuvers.filter(m => m.type !== 'depart' && m.type !== 'arrive').forEach((m, i) => { m.street = demoNames[i] || ''; });
+  base.maneuvers.forEach(m => { if (!m.street) delete m.street; });
+  const names = ['Piazza Municipio', 'Ospedale', 'Stazione', 'Mercato', 'Scuole', 'Capolinea'];
+  const at = [120, 700, 1150, 1650, 2150, base.length - 12];
+  const stops = at.map((s, i) => {
+    const p = pointAt(base, s), hd = p.heading * D2R, ll = base.proj.toLL(p.x + Math.cos(hd) * 6, p.y - Math.sin(hd) * 6);
+    return { name: names[i], lat: ll[0], lon: ll[1] };
+  });
+  base.stops = attachStops(base, stops);
+  return base;
+}
+
+/* ---------- navigatore ---------- */
+class Navigator {
+  constructor(route) {
+    this.r = route; this.s = 0; this.speed = null; this.avgV = 6.1; this.prev = null;
+    this.offCount = 0; this.onCount = 0; this.offRoute = false; this.lastOffSay = -1e12;
+    this.ann = new Map(); this.stopAnn = new Set(); this.arrived = false; this.pos = null;
+  }
+  fix(lat, lon, o) {
+    const p = this.r.proj.toXY(lat, lon);
+    return Object.assign({ x: p[0], y: p[1], t: Date.now() }, o || {});
+  }
+  update(f) {
+    const r = this.r, say = [];
+    let v = f.speed != null && f.speed >= 0 ? f.speed : null;
+    if (v == null && this.prev) { const dt = (f.t - this.prev.t) / 1000; if (dt > 0.3) v = Math.hypot(f.x - this.prev.x, f.y - this.prev.y) / dt; }
+    if (v != null) { this.speed = this.speed == null ? v : 0.6 * this.speed + 0.4 * v; if (v > 1.5) this.avgV = 0.97 * this.avgV + 0.03 * v; }
+    this.prev = { x: f.x, y: f.y, t: f.t };
+    const hdg = (f.heading != null && !isNaN(f.heading) && (this.speed || 0) > 1.5) ? f.heading : null;
+    const tol = Math.max(35, (f.acc || 0) * 1.2);
+    const win = projectRange(r, f.x, f.y, Math.max(0, this.s - 40), Math.min(r.length, this.s + Math.max(150, (this.speed || 0) * 12) + 150), hdg);
+    let m = null, jump = false;
+    if (win && win.dist <= tol) m = win;
+    else {
+      const g = projectRange(r, f.x, f.y, 0, r.length, hdg);
+      if (g && g.dist <= tol) { m = g; jump = true; }
+    }
+    let rejoin = null, offDist = 0;
+    if (m) {
+      this.offCount = 0;
+      if (this.offRoute) { this.onCount++; if (this.onCount >= 2) { this.offRoute = false; this.onCount = 0; say.push({ text: 'Di nuovo sul percorso', key: 'on' }); } }
+      this.s = jump ? m.s : Math.max(this.s, m.s);
+      this.pos = { x: m.px, y: m.py, heading: m.heading };
+      if (this.offRoute) { offDist = m.dist; rejoin = { dist: m.dist, x: m.px, y: m.py }; }
+    } else {
+      this.onCount = 0; this.offCount++;
+      const g = projectRange(r, f.x, f.y, 0, r.length, null);
+      if (g) { offDist = g.dist; rejoin = { dist: g.dist, x: g.px, y: g.py, s: g.s }; }
+      if (this.offCount >= 3) {
+        if (!this.offRoute) this.lastOffSay = -1e12;
+        this.offRoute = true;
+        if (f.t - this.lastOffSay > 25000) { this.lastOffSay = f.t; say.push({ text: 'Sei fuori percorso. Torna sulla linea', key: 'off' }); }
+      }
+      this.pos = { x: f.x, y: f.y, heading: f.heading != null && !isNaN(f.heading) ? f.heading : (this.pos ? this.pos.heading : 0) };
+    }
+    const s = this.s, ms = r.maneuvers;
+    let idx = ms.findIndex(q => q.type !== 'depart' && q.s > s - 8);
+    if (idx < 0) idx = ms.length - 1;
+    const next = ms[idx], dNext = Math.max(0, next.s - s);
+    let then = null;
+    if (next.type !== 'arrive' && idx + 1 < ms.length && ms[idx + 1].type !== 'arrive' && ms[idx + 1].s - next.s < 200) then = { m: ms[idx + 1], d: ms[idx + 1].s - next.s };
+    if (!this.offRoute) {
+      const vv = Math.max(this.speed || 0, 3), far = clamp(vv * 28, 250, 600), near = clamp(vv * 10, 80, 200);
+      const lvl = this.ann.get(idx) || 0;
+      if (next.type === 'arrive') {
+        if (dNext <= 40 && lvl < 3) { this.ann.set(idx, 3); this.arrived = true; say.push({ text: 'Sei arrivato al capolinea. ' + r.name, key: 'arrive' }); }
+        else if (dNext <= far && lvl < 1) { this.ann.set(idx, 1); say.push({ text: 'Tra ' + fmtDistSpeech(dNext) + ', capolinea', key: 'far' + idx }); }
+      } else if (dNext <= near && lvl < 2) {
+        this.ann.set(idx, 2);
+        say.push({ text: 'Tra poco, ' + lc(describe(next, true)) + (then ? ', poi ' + lc(describe(then.m, true)) : ''), key: 'near' + idx });
+      } else if (dNext <= far && dNext > near + 30 && lvl < 1) {
+        this.ann.set(idx, 1);
+        say.push({ text: 'Tra ' + fmtDistSpeech(dNext) + ', ' + lc(describe(next, true)), key: 'far' + idx });
+      }
+    }
+    let nextStop = null;
+    for (let i = 0; i < r.stops.length; i++) {
+      const st = r.stops[i];
+      if (st.s < s - 8) continue;
+      nextStop = { stop: st, d: Math.max(0, st.s - s) };
+      if (!this.offRoute && nextStop.d <= 150 && !this.stopAnn.has(i)) { this.stopAnn.add(i); say.push({ text: stopSpeech(st.name), key: 'stop' + i }); }
+      break;
+    }
+    const remaining = Math.max(0, r.length - s);
+    return {
+      s, remaining, etaSec: remaining / Math.max(this.avgV, 3), pct: s / r.length, speed: this.speed || 0,
+      offRoute: this.offRoute, offDist, rejoin, acc: f.acc || 0, idx, next, dNext, then, nextStop, say, pos: this.pos, arrived: this.arrived,
+    };
+  }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { probePoint, applyStreets, roadFromNominatim, stopSpeech, buildRoute, parseKml, parseGpx, parseGeoText, readGeoFile, unzipKml, detectManeuvers, describe, iconFor, routeStats, demoRoute, Navigator, pointAt, mercAt, headingAt, projectRange, makeProj, merc, fmtDist, fmtDistSpeech, fmtKm, fmtDur, normAngle, bearingXY, clamp };
+}
+
+const PRESETS = [{"id": "p-linea-160-washington", "name": "Linea 160 WASHINGTON", "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n<Document>\n\t<name>Linea 160 WASHINGTON.kml<\/name>\n\t<Style id=\"sn_ylw-pushpin2\">\n\t\t<IconStyle>\n\t\t\t<scale>1.1<\/scale>\n\t\t\t<Icon>\n\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png<\/href>\n\t\t\t<\/Icon>\n\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n\t\t<\/IconStyle>\n\t\t<LineStyle>\n\t\t\t<color>ff0000ff<\/color>\n\t\t\t<width>4<\/width>\n\t\t<\/LineStyle>\n\t<\/Style>\n\t<StyleMap id=\"msn_ylw-pushpin020\">\n\t\t<Pair>\n\t\t\t<key>normal<\/key>\n\t\t\t<styleUrl>#sn_ylw-pushpin2<\/styleUrl>\n\t\t<\/Pair>\n\t\t<Pair>\n\t\t\t<key>highlight<\/key>\n\t\t\t<styleUrl>#sh_ylw-pushpin3<\/styleUrl>\n\t\t<\/Pair>\n\t<\/StyleMap>\n\t<Style id=\"sh_ylw-pushpin3\">\n\t\t<IconStyle>\n\t\t\t<scale>1.3<\/scale>\n\t\t\t<Icon>\n\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png<\/href>\n\t\t\t<\/Icon>\n\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n\t\t<\/IconStyle>\n\t\t<LineStyle>\n\t\t\t<color>ff0000ff<\/color>\n\t\t\t<width>4<\/width>\n\t\t<\/LineStyle>\n\t<\/Style>\n\t<Folder>\n\t\t<name>Linea 160 WASHINGTON<\/name>\n\t\t<visibility>0<\/visibility>\n\t\t<Placemark>\n\t\t\t<name>Linea 160 WASHINGTON<\/name>\n\t\t\t<visibility>0<\/visibility>\n\t\t\t<styleUrl>#msn_ylw-pushpin020<\/styleUrl>\n\t\t\t<LineString>\n\t\t\t\t<tessellate>1<\/tessellate>\n\t\t\t\t<coordinates>\n\t\t\t\t\t12.48386312785335,41.8445210381783,0 12.49138584346713,41.84986557142496,0 12.49292271519104,41.85104108574002,0 12.4933722373189,41.85077322912007,0 12.49375666686036,41.85092275486979,0 12.49810705443014,41.8516529612817,0 12.49843813592141,41.85158199404422,0 12.4992205538642,41.85170056016783,0 12.49953070329692,41.8518900839231,0 12.50282193041046,41.85229908090912,0 12.50310155169641,41.85172528706904,0 12.50334342897565,41.85177757665775,0 12.50346486845365,41.85182950025724,0 12.50354853676311,41.85189862152705,0 12.50350270507091,41.85201474355318,0 12.50320200160026,41.85254536231155,0 12.5027660106465,41.85241333100405,0 12.49939977680735,41.85197576265457,0 12.49936431775525,41.85211887355018,0 12.49835670049179,41.85197877312476,0 12.49689772135734,41.8574015622414,0 12.4967773374442,41.85798541611642,0 12.49665205788334,41.85846620483635,0 12.49757987342519,41.85913072006358,0 12.49806893483764,41.85957354121075,0 12.49837532981855,41.86002050148169,0 12.4984616309382,41.86027899820428,0 12.49852661925071,41.86061617034996,0 12.49847391959925,41.8609272484579,0 12.4983187458648,41.86148483851421,0 12.49668624584938,41.86698814158225,0 12.49663070912721,41.86723559438833,0 12.49651991794688,41.86774457835883,0 12.49639145030452,41.86936791302722,0 12.49649516160279,41.87038241809976,0 12.49681925749885,41.87369564826255,0 12.49667104277751,41.87466837110124,0 12.496506157047,41.87477269985983,0 12.49625710331335,41.87481735511933,0 12.49612132709696,41.87477619485973,0 12.49600742668214,41.87469966349423,0 12.49598430449937,41.87461066797837,0 12.4962244752772,41.87434738614908,0 12.49632790372113,41.87425599514307,0 12.49639483639551,41.87379466857195,0 12.49638465440787,41.87362691130645,0 12.49635267596248,41.87341324274731,0 12.49626812499687,41.87339454691057,0 12.49612749068014,41.87338341916543,0 12.49590103512623,41.87341344377074,0 12.49561965002857,41.87349502875205,0 12.4945612103055,41.87386099493906,0 12.49444336350009,41.87387416930101,0 12.49408967990614,41.87387385369358,0 12.49276929157972,41.87364723801764,0 12.49265933281489,41.87363621926883,0 12.49257018456173,41.87368978569434,0 12.49118542429282,41.87516906590751,0 12.49094063221967,41.87535353714113,0 12.48954353055219,41.87651864702396,0 12.48965175083704,41.87669996772389,0 12.48970509040794,41.87689385151603,0 12.48967448973251,41.87700389750962,0 12.48966782303656,41.877016338109,0 12.48958785500244,41.87718578244606,0 12.48854506683698,41.87780532912579,0 12.48831985528294,41.87792817743867,0 12.48860869126231,41.87825729514066,0 12.48897770228982,41.87857602454027,0 12.48923487584871,41.87876051577096,0 12.4893686693588,41.87883459348203,0 12.48955670671297,41.87884260218019,0 12.48969111142997,41.8788675648558,0 12.48977436384511,41.87896499537179,0 12.48976205356841,41.87910836261712,0 12.4899349899544,41.87934267000315,0 12.49010701364386,41.87958459003941,0 12.4902756294194,41.88002341649884,0 12.49027991035594,41.88024570197513,0 12.49024425664242,41.88077504332123,0 12.49015623610486,41.8813168070884,0 12.4901600694297,41.88159846917502,0 12.49019249532567,41.88187567134952,0 12.49037039737254,41.88225794596109,0 12.49053361608539,41.88253160105479,0 12.49056335863621,41.88271819764054,0 12.49050491740654,41.88292257517163,0 12.49033956019523,41.8830952073789,0 12.49016035175203,41.8833556022529,0 12.49017976165871,41.88354650961278,0 12.49004861359955,41.88373660607788,0 12.48962752403004,41.8840228541972,0 12.48949739217723,41.88418820434295,0 12.48950737340639,41.88440287698463,0 12.48948747930205,41.88459155837889,0 12.48945436337089,41.88471321752777,0 12.48924497707151,41.88480101578984,0 12.48913331115326,41.88478212687463,0 12.48900595566872,41.88462789493711,0 12.48883406487548,41.88436957482596,0 12.48844915000524,41.88405568515053,0 12.48806267021352,41.88377571775546,0 12.48784473554053,41.8837506909341,0 12.48758152640318,41.88385337100298,0 12.48733236785319,41.8840090837085,0 12.48684315767552,41.88430500766074,0 12.48559778652876,41.88504797355958,0 12.48516730627421,41.88536354599407,0 12.48495674988719,41.88550477812065,0 12.4845760245876,41.88572499227098,0 12.48416465971459,41.88590088506849,0 12.48375250734306,41.88616567726234,0 12.48291205929632,41.88670158929315,0 12.48229713337894,41.88722025113217,0 12.48251699031566,41.88742658216407,0 12.48326856612418,41.88814112674598,0 12.48297600258329,41.88832403748057,0 12.48214196153315,41.88887529420882,0 12.48162357414279,41.8891214343372,0 12.48131894195432,41.88922522187949,0 12.48103470826753,41.88992840682784,0 12.48033665281307,41.89161054655074,0 12.48039301569611,41.89187096302557,0 12.48050700456751,41.89229265318499,0 12.4806917627059,41.89265505595945,0 12.48093173423401,41.89284609379423,0 12.48148344618188,41.89320918184251,0 12.48172692444555,41.89343515812939,0 12.48183892808395,41.89361430281756,0 12.48193747011213,41.89384515299707,0 12.48192074621948,41.89401962663101,0 12.48193522723568,41.89423342092122,0 12.48203851788866,41.89464775553192,0 12.48207149339558,41.89494262229648,0 12.48211367908105,41.8951846868975,0 12.48227462167028,41.89535162665059,0 12.48242114937795,41.89550799887223,0 12.48273282960628,41.8956537978435,0 12.48279266828505,41.89587742621408,0 12.4827245861186,41.89617896321417,0 12.48233455137922,41.89661920496777,0 12.48212879862962,41.89683432918569,0 12.48029711752826,41.90125389036991,0 12.48035269563264,41.90146163841288,0 12.48073405926678,41.90163266002021,0 12.48161569939518,41.90186346399714,0 12.48802475515952,41.90345782854371,0 12.48864938440758,41.90355712041863,0 12.4889469931438,41.9037111256069,0 12.4889896323318,41.9038936577602,0 12.48881098187054,41.9040957517951,0 12.48850533557071,41.9043931772101,0 12.48812236752601,41.90498215295395,0 12.48806215315128,41.90528211982676,0 12.48813058764679,41.90546005874057,0 12.48827011025702,41.90564959072373,0 12.48851990738396,41.90578496438978,0 12.48934836837187,41.9060103435213,0 12.49003695303966,41.9062711478355,0 12.49028006284597,41.90644897076993,0 12.4903740287005,41.90674426518977,0 12.49019975762293,41.90708351389294,0 12.48851540765361,41.90926469821549,0 12.48857898447676,41.9093484142295,0 12.488612092733,41.90951521044718,0 12.4890624693691,41.9095883566516,0 12.48929946266375,41.90960326937952,0 12.48937387812926,41.90965197445644,0 12.48941189617129,41.90979115194698,0 12.48936443513028,41.90989521712888,0 12.48920805459462,41.90994233640232,0 12.48863382695042,41.90987676945647,0 12.48836753842793,41.90985383555245,0 12.48816906426826,41.90985703353722,0 12.48781672252794,41.9100433401799,0 12.48616760669039,41.91155153188769,0 12.48573834648147,41.9118597401414,0 12.4853705487587,41.91212053035051,0 12.48478211088704,41.91250058013002,0 12.48449140102318,41.91256049899395,0 12.48427736532574,41.9126604844422,0 12.4831242346125,41.91318054892525,0 12.48285733453244,41.91329708472718,0 12.48217301965192,41.91348215119922,0 12.48102197418358,41.91374669927379,0 12.48073101843233,41.91381093551385,0 12.48074603299323,41.91381038549863,0 12.48042325108814,41.91381027264215,0 12.48022178771872,41.91374639752297,0 12.47979741115133,41.91355187515844,0 12.47727493428302,41.91231374078735,0 \n\t\t\t\t<\/coordinates>\n\t\t\t<\/LineString>\n\t\t<\/Placemark>\n\t<\/Folder>\n<\/Document>\n<\/kml>\n"}];
+/* Linea Guida: interfaccia, mappa, GPS e voce. Usa le funzioni di core.js. */
+(() => {
+  const PREVIEW = false;   // anteprima pubblicata: niente GPS né tessere stradali
+  const TILES_ON = true;
+  const TILE = 256;
+  const $ = id => document.getElementById(id);
+
+  /* ---------- icone ---------- */
+  const IC = {
+    menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    back: '<path d="M15 5l-7 7 7 7"/>',
+    chevron: '<path d="M7 10l5 5 5-5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    minus: '<path d="M5 12h14"/>',
+    straight: '<path d="M12 21V4M6 10l6-6 6 6"/>',
+    'slight-r': '<path d="M8 21v-7l7-8M10 6h5v5"/>',
+    'slight-l': '<path d="M16 21v-7L9 6M14 6H9v5"/>',
+    'turn-r': '<path d="M8 21v-8a4 4 0 0 1 4-4h8M16 4l4 5-4 5"/>',
+    'turn-l': '<path d="M16 21v-8a4 4 0 0 0-4-4H4M8 4L4 9l4 5"/>',
+    'sharp-r': '<path d="M7 3v8l9 9M10 20h6v-6"/>',
+    'sharp-l': '<path d="M17 3v8l-9 9M14 20H8v-6"/>',
+    uturn: '<path d="M8 21V9a4 4 0 0 1 8 0v11M12.5 16l3.5 4 3.5-4"/>',
+    roundabout: '<circle cx="12" cy="14" r="5"/><path d="M12 22v-3M12 9V3M9 6l3-3 3 3"/>',
+    depart: '<circle cx="12" cy="12" r="6"/>',
+    arrive: '<path d="M12 21s-6-5.6-6-10.5a6 6 0 0 1 12 0C18 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2"/>',
+    bus: '<rect x="5" y="3.5" width="14" height="14" rx="3"/><path d="M5 11h14M8 20.5v-3M16 20.5v-3"/>',
+    volume: '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+    mute: '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM16 9.5l5 5M21 9.5l-5 5"/>',
+    locate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+    list: '<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+    play: '<path d="M8 5.5v13l11-6.5z"/>',
+    pause: '<path d="M8.5 5v14M15.5 5v14"/>',
+    upload: '<path d="M12 16V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',
+    trash: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+    nav: '<path d="M12 3l7.5 17-7.5-4-7.5 4z"/>',
+  };
+  const FILLED = new Set(['play', 'nav', 'depart']);
+  const svg = (name, size, extra) => `<svg class="ic" viewBox="0 0 24 24" width="${size || 24}" height="${size || 24}" fill="${FILLED.has(name) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra || ''}>${IC[name] || ''}</svg>`;
+  const hydrate = root => root.querySelectorAll('[data-ic]').forEach(n => { n.innerHTML = svg(n.dataset.ic, +n.dataset.size || 24); });
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ---------- stato ---------- */
+  const S = { lines: [], cur: null, mode: 'home', nav: null, follow: true, muted: false, sim: null, watch: null, info: null };
+  const el = {};
+  ['map', 'scaleTag', 'topbar', 'btnLines', 'pillName', 'homeBottom', 'zIn', 'zOut', 'sheetHome', 'lineTitle', 'lineMeta', 'lineNote', 'btnStart', 'btnStartLbl', 'btnPreview', 'btnSteps',
+    'navTop', 'navBanner', 'navIcon', 'navDist', 'navText', 'offBanner', 'offArrow', 'offDist', 'navThen', 'stopChip', 'navBottom', 'speed', 'speedVal', 'btnRecenter', 'btnMute',
+    'simPanel', 'simPlay', 'simSeek', 'progBar', 'btnExit', 'etaClock', 'etaMeta', 'btnStepsNav', 'drawerLines', 'closeLines', 'btnImport', 'fileInput', 'lineList',
+    'drawerSteps', 'closeSteps', 'stepsTitle', 'stepsList', 'stepsHelp', 'toast'].forEach(id => { el[id] = $(id); });
+
+  let toastT = 0;
+  function toast(msg) {
+    const b = S.mode === 'nav' ? el.navBottom : el.homeBottom;
+    el.toast.style.bottom = ((b.offsetHeight || 140) + 14) + 'px';
+    el.toast.textContent = msg; el.toast.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.toast.hidden = true; }, 4500); }
+
+  /* ---------- archivio locale (IndexedDB, con riserva in memoria) ---------- */
+  const DB = {
+    db: null, mem: new Map(),
+    async open() {
+      try {
+        this.db = await Promise.race([
+          new Promise((res, rej) => { const rq = indexedDB.open('linea-guida', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('files', { keyPath: 'id' }); rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 2000)),
+        ]);
+      } catch (e) { this.db = null; }
+    },
+    all() {
+      if (!this.db) return Promise.resolve([...this.mem.values()]);
+      return new Promise(res => { try { const rq = this.db.transaction('files').objectStore('files').getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res([]); } catch (e) { res([]); } });
+    },
+    put(rec) {
+      this.mem.set(rec.id, rec);
+      if (!this.db) return Promise.resolve();
+      return new Promise(res => { try { const tx = this.db.transaction('files', 'readwrite'); tx.objectStore('files').put(rec); tx.oncomplete = () => res(); tx.onerror = () => res(); } catch (e) { res(); } });
+    },
+    del(id) {
+      this.mem.delete(id);
+      if (!this.db) return Promise.resolve();
+      return new Promise(res => { try { const tx = this.db.transaction('files', 'readwrite'); tx.objectStore('files').delete(id); tx.oncomplete = () => res(); tx.onerror = () => res(); } catch (e) { res(); } });
+    },
+  };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* facoltativo */ } },
+  };
+
+  /* ---------- linee ---------- */
+  function linesFromParsed(parsed, rec) {
+    const base = rec.name.replace(/\.(kml|kmz|gpx|xml)$/i, '');
+    const out = [];
+    parsed.lines.forEach((ln, i) => {
+      try {
+        const nm = ln.name || (parsed.lines.length > 1 ? base + ' ' + (i + 1) : base);
+        const route = buildRoute(nm, ln.coords, parsed.stops);
+        applyStreets(route, rec.streets);
+        out.push({ id: rec.id + '#' + i, route, fileId: rec.preset ? null : rec.id, fileName: rec.preset ? '' : rec.name, rec });
+      } catch (e) { /* percorso non valido: ignorato */ }
+    });
+    return out;
+  }
+  async function readFileToText(file) {
+    const buf = await file.arrayBuffer(), u8 = new Uint8Array(buf, 0, Math.min(2, buf.byteLength));
+    return (u8[0] === 0x50 && u8[1] === 0x4b) ? unzipKml(buf) : new TextDecoder('utf-8').decode(buf);
+  }
+  async function importFiles(files) {
+    let added = 0, first = null;
+    for (const f of files) {
+      try {
+        const text = await readFileToText(f);
+        const rec = { id: 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: f.name, text, added: Date.now() };
+        const ls = linesFromParsed(parseGeoText(text), rec);
+        if (!ls.length) { toast('Nel file «' + f.name + '» non ho trovato percorsi.'); continue; }
+        await DB.put(rec);
+        S.lines.push(...ls); added += ls.length; first = first || ls[0];
+      } catch (e) { toast('Non riesco a leggere «' + f.name + '».'); }
+    }
+    if (added) {
+      renderLines(); setCur(first); closeDrawer(el.drawerLines);
+      toast(added === 1 ? 'Linea importata' : added + ' linee importate');
+    }
+  }
+
+  /* ---------- nomi delle vie (OpenStreetMap, chiesti una volta sola e salvati) ---------- */
+  let namesBusy = null;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // le linee già pronte non stanno nell'archivio dei file: i loro nomi di vie si salvano a parte
+  const saveRec = rec => rec.preset ? Promise.resolve(store.set('lg-streets-' + rec.id, JSON.stringify(rec.streets || {}))) : DB.put(rec);
+  async function resolveStreets(line) {
+    if (PREVIEW || !line || !line.rec || line.route.synthetic || typeof fetch !== 'function' || namesBusy) return;
+    const r = line.route, rec = line.rec; rec.streets = rec.streets || {};
+    const todo = [];
+    r.maneuvers.forEach((m, i) => {
+      if (m.type === 'depart' || m.type === 'arrive') return;
+      const p = probePoint(r, i); if (!(p.key in rec.streets)) todo.push(p);
+    });
+    if (!todo.length) return;
+    namesBusy = line; refreshNote();
+    const delay = (window.__LG_DELAY != null) ? window.__LG_DELAY : 1100; // la regola del servizio: una richiesta al secondo
+    let fails = 0, done = 0;
+    try {
+      for (const p of todo) {
+        if (S.mode === 'nav' || S.cur !== line) break;                  // non disturbare la guida; se cambi linea si passa a quella
+        try {
+          const res = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&addressdetails=1&accept-language=it&lat=' + p.lat.toFixed(6) + '&lon=' + p.lon.toFixed(6));
+          if (!res.ok) throw new Error('http ' + res.status);
+          rec.streets[p.key] = roadFromNominatim(await res.json()); done++; // '' = strada senza nome: non lo richiedo
+          if (done % 8 === 0) { applyStreets(r, rec.streets); saveRec(rec); }
+        } catch (e) { if (++fails >= 3) break; }
+        await sleep(delay);
+      }
+    } finally {
+      const n = applyStreets(r, rec.streets); await saveRec(rec); namesBusy = null;
+      refreshNote(); if (!el.drawerSteps.hidden && S.cur === line) renderSteps();
+      if (S.cur === line) {
+        if (fails >= 3 && !done) toast('Non riesco a leggere i nomi delle vie: riproverò quando c\'è internet.');
+        else if (n && S.mode === 'home') toast('Nomi delle vie aggiunti');
+      } else if (S.cur && S.mode === 'home') resolveStreets(S.cur);   // nel frattempo hai scelto un'altra linea
+    }
+  }
+
+  /* ---------- mappa ---------- */
+  const cv = el.map, ctx = cv.getContext('2d');
+  let W = 300, H = 500, DPR = 1, needs = true, anchorY = 250, themeNight = false;
+  const cam = { mx: 0.5, my: 0.5, zoom: 14, bearing: 0 };
+  const tgt = { zoom: 17, bearing: 0 };
+  const veh = { mx: 0.5, my: 0.5, hd: 0, ready: false, tmx: 0.5, tmy: 0.5, thd: 0 };
+  let focusPt = null, rejoinPt = null, autoZoomUntil = 0, buf = { n: 0, x: null, y: null };
+  let T = {};
+  const mercLat = my => Math.atan(Math.sinh(Math.PI * (1 - 2 * my))) * R2D;
+
+  function readTheme() {
+    const cs = getComputedStyle(document.documentElement), g = n => cs.getPropertyValue(n).trim();
+    T = { bg: g('--map-bg'), grid: g('--map-grid'), label: g('--map-label'), route: g('--route'), edge: g('--route-edge'), done: g('--route-done'), veil: g('--tile-veil'), surface: g('--surface'), accent: g('--accent'), ok: g('--ok'), warn: g('--warn'), fg: g('--fg') };
+    needs = true;
+  }
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    W = Math.max(100, r.width); H = Math.max(100, r.height); DPR = Math.min(window.devicePixelRatio || 1, 3);
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    setAnchor(); needs = true;
+  }
+  function setAnchor() {
+    if (S.mode === 'nav') anchorY = Math.min(H * 0.74, H - el.navBottom.offsetHeight - 130);
+    else anchorY = (76 + (H - el.homeBottom.offsetHeight - 16)) / 2;
+  }
+
+  /* tessere stradali (solo versione installabile) */
+  const tiles = new Map(); let tileFail = 0, tileOk = 0;
+  function getTile(z, x, y) {
+    const k = z + '/' + x + '/' + y; let t = tiles.get(k);
+    if (t) return t.ok ? t.img : null;
+    if (tiles.size > 260) tiles.delete(tiles.keys().next().value);
+    const img = new Image(); t = { img, ok: false }; tiles.set(k, t);
+    img.onload = () => { t.ok = true; tileOk++; needs = true; };
+    img.onerror = () => { tileFail++; };
+    img.decoding = 'async';
+    img.src = 'https://tile.openstreetmap.org/' + k + '.png';
+    return null;
+  }
+  const tilesActive = () => TILES_ON && S.cur && !S.cur.route.synthetic && !(tileFail > 12 && tileOk === 0);
+
+  function render() {
+    needs = false;
+    const S_ = TILE * Math.pow(2, cam.zoom), cxw = cam.mx * S_, cyw = cam.my * S_;
+    const b = cam.bearing * D2R, cb = Math.cos(b), sb = Math.sin(b), ox = W / 2, oy = anchorY;
+    const toS = (mx, my) => { const dx = mx * S_ - cxw, dy = my * S_ - cyw; return [ox + dx * cb + dy * sb, oy - dx * sb + dy * cb]; };
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
+    const mpp = 156543.03392 * Math.cos(mercLat(cam.my) * D2R) / Math.pow(2, cam.zoom);
+    if (tilesActive()) { drawTiles(S_, cxw, cyw, ox, oy, b); el.scaleTag.hidden = true; }
+    else drawGrid(cxw, cyw, ox, oy, b, mpp);
+    const line = S.cur; if (!line) return;
+    const r = line.route, n = r.n;
+    if (buf.n !== n) buf = { n, x: new Float32Array(n), y: new Float32Array(n) };
+    const sx = buf.x, sy = buf.y;
+    for (let i = 0; i < n; i++) { const dx = r.mx[i] * S_ - cxw, dy = r.my[i] * S_ - cyw; sx[i] = ox + dx * cb + dy * sb; sy[i] = oy - dx * sb + dy * cb; }
+    const w = clamp(3 + (cam.zoom - 12) * 1.15, 4, 13), stride = (n > 5000 && cam.zoom < 15) ? Math.ceil(n / 5000) : 1;
+    const nav = S.mode === 'nav' && S.info, sDone = nav ? S.info.s : 0;
+    let iDone = -1, snap = null;
+    if (nav && sDone > 0) { iDone = segIndex(r, sDone); snap = toS.apply(null, mercAt(r, sDone)); }
+    const trace = (i0, i1, pre) => {
+      ctx.beginPath(); let started = false;
+      if (pre) { ctx.moveTo(pre[0], pre[1]); started = true; }
+      for (let i = i0; i <= i1; i += stride) { if (!started) { ctx.moveTo(sx[i], sy[i]); started = true; } else ctx.lineTo(sx[i], sy[i]); }
+      if (stride > 1) ctx.lineTo(sx[i1], sy[i1]);
+    };
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = T.edge; ctx.lineWidth = w + 4; trace(0, n - 1); ctx.stroke();
+    if (iDone >= 0) {
+      ctx.strokeStyle = T.done; ctx.lineWidth = w; trace(0, iDone, null); ctx.lineTo(snap[0], snap[1]); ctx.stroke();
+      ctx.strokeStyle = T.route; ctx.lineWidth = w; trace(iDone + 1, n - 1, snap); ctx.stroke();
+    } else { ctx.strokeStyle = T.route; ctx.lineWidth = w; trace(0, n - 1); ctx.stroke(); }
+    // frecce di direzione
+    if (cam.zoom >= 13.5) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(1.6, w * 0.26); const a = w * 0.34; let acc = 40;
+      for (let i = Math.max(0, iDone); i < n - 1; i++) {
+        const x0 = sx[i], y0 = sy[i], x1 = sx[i + 1], y1 = sy[i + 1], L = Math.hypot(x1 - x0, y1 - y0);
+        if (L < 0.01) continue;
+        if ((x0 < -60 && x1 < -60) || (x0 > W + 60 && x1 > W + 60) || (y0 < -60 && y1 < -60) || (y0 > H + 60 && y1 > H + 60)) { acc = (acc + L) % 96; continue; }
+        let pos = 96 - acc; const ang = Math.atan2(y1 - y0, x1 - x0);
+        while (pos <= L) {
+          const px = x0 + (x1 - x0) * pos / L, py = y0 + (y1 - y0) * pos / L;
+          ctx.save(); ctx.translate(px, py); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(-a, -a); ctx.lineTo(a * 0.7, 0); ctx.lineTo(-a, a); ctx.stroke(); ctx.restore();
+          pos += 96;
+        }
+        acc = 96 - (pos - L);
+      }
+    }
+    // svolte (puntini) e fermate
+    if (cam.zoom >= 15) {
+      ctx.fillStyle = T.surface; ctx.strokeStyle = T.fg; ctx.lineWidth = 2;
+      for (const m of r.maneuvers) {
+        if (m.type === 'depart' || m.type === 'arrive') continue;
+        const p = toS.apply(null, mercAt(r, m.s));
+        if (p[0] < -10 || p[0] > W + 10 || p[1] < -10 || p[1] > H + 10) continue;
+        ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, 7); ctx.fill(); ctx.stroke();
+      }
+    }
+    ctx.font = '500 12px Roboto, system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    for (const st of r.stops) {
+      const p = toS(st.mx, st.my);
+      if (p[0] < -30 || p[0] > W + 30 || p[1] < -30 || p[1] > H + 30) continue;
+      ctx.fillStyle = T.surface; ctx.beginPath(); ctx.arc(p[0], p[1], 9, 0, 7); ctx.fill();
+      ctx.fillStyle = T.accent; ctx.beginPath(); ctx.arc(p[0], p[1], 5.2, 0, 7); ctx.fill();
+      if (cam.zoom >= 15.5) {
+        ctx.lineWidth = 3.5; ctx.strokeStyle = T.surface; ctx.fillStyle = T.fg; ctx.lineJoin = 'round';
+        ctx.strokeText(st.name, p[0] + 14, p[1]); ctx.fillText(st.name, p[0] + 14, p[1]);
+      }
+    }
+    // partenza e capolinea
+    const a0 = toS(r.mx[0], r.my[0]), a1 = toS(r.mx[n - 1], r.my[n - 1]);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(a0[0], a0[1], 10, 0, 7); ctx.fill();
+    ctx.fillStyle = T.ok; ctx.beginPath(); ctx.arc(a0[0], a0[1], 6.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(a1[0], a1[1], 11, 0, 7); ctx.fill();
+    ctx.fillStyle = T.warn; ctx.beginPath(); ctx.arc(a1[0], a1[1], 8, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(a1[0], a1[1], 3, 0, 7); ctx.fill();
+    // svolta selezionata
+    if (focusPt) {
+      const p = toS(focusPt.mx, focusPt.my);
+      ctx.strokeStyle = T.accent; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(p[0], p[1], 15, 0, 7); ctx.stroke();
+    }
+    // veicolo
+    if (S.mode === 'nav' && veh.ready) {
+      const p = toS(veh.mx, veh.my), ang = (veh.hd - cam.bearing) * D2R;
+      if (rejoinPt) {
+        const q = toS(rejoinPt.mx, rejoinPt.my);
+        ctx.setLineDash([8, 7]); ctx.strokeStyle = T.warn; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke(); ctx.setLineDash([]);
+      }
+      const acc = S.info && S.info.acc ? S.info.acc / mpp : 0;
+      if (acc > 20) { ctx.fillStyle = T.route; ctx.globalAlpha = 0.12; ctx.beginPath(); ctx.arc(p[0], p[1], Math.min(acc, 160), 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+      ctx.save(); ctx.translate(p[0], p[1]);
+      ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 8; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, 17, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.fillStyle = T.route; ctx.beginPath(); ctx.arc(0, 0, 13.5, 0, 7); ctx.fill();
+      ctx.rotate(ang); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(0, -8.5); ctx.lineTo(7, 7); ctx.lineTo(0, 3.2); ctx.lineTo(-7, 7); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+  }
+  function drawGrid(cxw, cyw, ox, oy, b, mpp) {
+    const steps = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+    const g = steps.find(m => m / mpp >= 70) || 50000, gp = g / mpp, R = Math.hypot(W, H);
+    ctx.save(); ctx.translate(ox, oy); ctx.rotate(-b); ctx.strokeStyle = T.grid; ctx.lineWidth = 1; ctx.beginPath();
+    for (let k = Math.floor((cxw - R) / gp); k <= Math.ceil((cxw + R) / gp); k++) { const x = Math.round(k * gp - cxw) + 0.5; ctx.moveTo(x, -R); ctx.lineTo(x, R); }
+    for (let k = Math.floor((cyw - R) / gp); k <= Math.ceil((cyw + R) / gp); k++) { const y = Math.round(k * gp - cyw) + 0.5; ctx.moveTo(-R, y); ctx.lineTo(R, y); }
+    ctx.stroke(); ctx.restore();
+    const txt = 'Griglia: un quadretto = ' + (g >= 1000 ? (g / 1000) + ' km' : g + ' m');
+    if (el.scaleTag.textContent !== txt) el.scaleTag.textContent = txt;
+    el.scaleTag.hidden = S.mode === 'nav';
+  }
+  function drawTiles(S_, cxw, cyw, ox, oy, b) {
+    const tz = clamp(Math.round(cam.zoom), 2, 19), ts = TILE * Math.pow(2, cam.zoom - tz), cb = Math.cos(b), sb = Math.sin(b);
+    let x0 = 1e18, x1 = -1e18, y0 = 1e18, y1 = -1e18;
+    for (const c of [[0, 0], [W, 0], [0, H], [W, H]]) {
+      const u = c[0] - ox, v = c[1] - oy, dx = u * cb - v * sb, dy = u * sb + v * cb;
+      x0 = Math.min(x0, dx); x1 = Math.max(x1, dx); y0 = Math.min(y0, dy); y1 = Math.max(y1, dy);
+    }
+    const tx0 = Math.floor((cxw + x0) / ts), tx1 = Math.floor((cxw + x1) / ts), ty0 = Math.floor((cyw + y0) / ts), ty1 = Math.floor((cyw + y1) / ts);
+    if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) > 90) return;
+    const n = Math.pow(2, tz);
+    ctx.save(); ctx.translate(ox, oy); ctx.rotate(-b);
+    for (let ty = ty0; ty <= ty1; ty++) {
+      if (ty < 0 || ty >= n) continue;
+      for (let tx = tx0; tx <= tx1; tx++) {
+        const img = getTile(tz, ((tx % n) + n) % n, ty);
+        if (img) ctx.drawImage(img, tx * ts - cxw, ty * ts - cyw, ts + 0.6, ts + 0.6);
+      }
+    }
+    ctx.restore();
+    ctx.fillStyle = T.veil; ctx.fillRect(0, 0, W, H);
+  }
+
+  /* telecamera */
+  const following = () => S.mode === 'nav' && S.follow;
+  function fitRoute(r) {
+    r = r || (S.cur && S.cur.route); if (!r) return;
+    setAnchor();
+    const topPad = 76, botPad = el.homeBottom.offsetHeight + 16, aw = W - 56, ah = Math.max(80, H - topPad - botPad);
+    const bw = Math.max(r.bbox[2] - r.bbox[0], 1e-7), bh = Math.max(r.bbox[3] - r.bbox[1], 1e-7);
+    cam.zoom = clamp(Math.log2(Math.min(aw / (bw * TILE), ah / (bh * TILE))), 3, 17.2);
+    cam.mx = (r.bbox[0] + r.bbox[2]) / 2; cam.my = (r.bbox[1] + r.bbox[3]) / 2; cam.bearing = 0; focusPt = null; needs = true;
+  }
+  function focusAt(mx, my, zoom) {
+    setAnchor(); cam.mx = mx; cam.my = my; cam.zoom = Math.max(cam.zoom, zoom || 17); cam.bearing = 0; focusPt = { mx, my }; needs = true;
+  }
+  function panBy(dx, dy) {
+    const S_ = TILE * Math.pow(2, cam.zoom), b = cam.bearing * D2R, cb = Math.cos(b), sb = Math.sin(b);
+    cam.mx -= (dx * cb - dy * sb) / S_; cam.my -= (dx * sb + dy * cb) / S_;
+    cam.my = clamp(cam.my, 0.001, 0.999); needs = true;
+    if (S.mode === 'nav' && S.follow) { S.follow = false; el.btnRecenter.hidden = false; }
+  }
+  function zoomBy(dz) {
+    cam.zoom = clamp(cam.zoom + dz, 3, 19.5); needs = true;
+    if (S.mode === 'nav') autoZoomUntil = performance.now() + 20000;
+  }
+  const ptrs = new Map(); let pinch0 = 0;
+  const pdist = () => { const a = [...ptrs.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
+  cv.addEventListener('pointerdown', e => { try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ok */ } ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 2) pinch0 = pdist(); });
+  cv.addEventListener('pointermove', e => {
+    const p = ptrs.get(e.pointerId); if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    if (ptrs.size === 1) panBy(dx, dy);
+    else if (ptrs.size === 2) { const d = pdist(); if (pinch0 > 0) zoomBy(Math.log2(d / pinch0)); pinch0 = d; }
+  });
+  const pend = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
+  cv.addEventListener('pointerup', pend); cv.addEventListener('pointercancel', pend);
+  cv.addEventListener('wheel', e => { e.preventDefault(); zoomBy(-e.deltaY * 0.0015); }, { passive: false });
+
+  /* ---------- voce e schermo acceso ---------- */
+  let voiceIt = null;
+  function pickVoice() { try { voiceIt = speechSynthesis.getVoices().find(v => /^it/i.test(v.lang)) || null; } catch (e) { /* non disponibile */ } }
+  try { pickVoice(); speechSynthesis.addEventListener('voiceschanged', pickVoice); } catch (e) { /* non disponibile */ }
+  function speak(text) {
+    if (S.muted) return;
+    try {
+      const go = () => { const u = new SpeechSynthesisUtterance(text); u.lang = 'it-IT'; if (voiceIt) u.voice = voiceIt; speechSynthesis.speak(u); };
+      if (speechSynthesis.speaking) { speechSynthesis.cancel(); setTimeout(go, 80); } else go();
+    } catch (e) { /* senza voce: resta il banner */ }
+  }
+  let wake = null;
+  async function requestWake() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { /* facoltativo */ } }
+  function releaseWake() { try { if (wake) wake.release(); } catch (e) { /* ok */ } wake = null; }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.mode === 'nav') requestWake(); });
+
+  /* ---------- schermata iniziale ---------- */
+  function homeNote(l) {
+    if (l.route.synthetic) return 'Linea di prova disegnata su una griglia, con nomi di vie inventati: serve a vedere come funziona la guida.';
+    if (PREVIEW) return 'In questa anteprima non ci sono GPS né mappa stradale: la guida parte in simulazione sul tuo file.';
+    if (namesBusy === l) return 'Sto cercando i nomi delle vie su OpenStreetMap (serve internet, solo la prima volta)…';
+    return '';
+  }
+  function refreshNote() {
+    const l = S.cur; if (!l || S.mode !== 'home') return;
+    const note = homeNote(l); el.lineNote.textContent = note; el.lineNote.hidden = !note;
+  }
+  function renderHome() {
+    const l = S.cur; if (!l) return;
+    const st = routeStats(l.route);
+    el.pillName.textContent = l.route.name; el.lineTitle.textContent = l.route.name;
+    el.lineMeta.textContent = fmtKm(l.route.length) + ' · circa ' + fmtDur(l.route.length / 6.1) + ' · ' + st.turns + (st.turns === 1 ? ' svolta' : ' svolte') + ' · ' + st.stops + (st.stops === 1 ? ' fermata' : ' fermate');
+    const note = homeNote(l);
+    el.lineNote.textContent = note; el.lineNote.hidden = !note;
+    el.btnPreview.hidden = PREVIEW; el.btnStartLbl.textContent = PREVIEW ? 'Avvia anteprima' : 'Avvia';
+    el.btnStart.firstElementChild.innerHTML = svg(PREVIEW ? 'play' : 'nav', 20);
+    requestAnimationFrame(() => { setAnchor(); if (S.mode === 'home') fitRoute(); });
+  }
+  function setCur(line) {
+    S.cur = line; focusPt = null; store.set('lg-cur', line.id);
+    renderHome(); renderLines(); resolveStreets(line);
+  }
+  const lineMeta = l => { const st = routeStats(l.route); return fmtKm(l.route.length) + ' · ' + st.turns + ' svolte · ' + st.stops + ' fermate'; };
+  function renderLines() {
+    el.lineList.innerHTML = '';
+    S.lines.forEach(l => {
+      const li = document.createElement('li'), row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;align-items:stretch';
+      const b = document.createElement('button'); b.className = 'card'; b.style.flex = '1'; b.setAttribute('aria-current', l === S.cur ? 'true' : 'false');
+      b.innerHTML = '<div class="grow"><div class="t">' + esc(l.route.name) + '</div><div class="s">' + esc(lineMeta(l)) + (l.fileName ? ' · ' + esc(l.fileName) : '') + '</div></div>';
+      b.onclick = () => { setCur(l); closeDrawer(el.drawerLines); };
+      row.appendChild(b);
+      if (l.fileId) {
+        const d = document.createElement('button'); d.className = 'round'; d.style.cssText = 'height:auto;min-height:48px;border-radius:16px;border:1px solid var(--line);box-shadow:none'; d.setAttribute('aria-label', 'Elimina il file ' + l.fileName); d.innerHTML = svg('trash', 22);
+        let armed = 0;
+        d.onclick = async () => {
+          if (!armed) { armed = setTimeout(() => { armed = 0; d.innerHTML = svg('trash', 22); d.style.color = ''; d.style.width = ''; }, 3000); d.innerHTML = '<span style="font-size:13px;font-weight:500;padding:0 6px">Elimina?</span>'; d.style.color = 'var(--warn)'; d.style.width = '84px'; d.style.borderRadius = '16px'; return; }
+          clearTimeout(armed); await DB.del(l.fileId);
+          S.lines = S.lines.filter(x => x.fileId !== l.fileId);
+          if (!S.lines.includes(S.cur)) setCur(S.lines[0]); else renderLines();
+          toast('File eliminato');
+        };
+        row.appendChild(d);
+      }
+      li.appendChild(row); el.lineList.appendChild(li);
+    });
+  }
+  function openDrawer(d) { d.hidden = false; }
+  function closeDrawer(d) { d.hidden = true; }
+
+  function renderSteps() {
+    const r = S.cur.route, rows = [];
+    r.maneuvers.forEach((m, i) => rows.push({ k: 'm', s: m.s, m, i }));
+    r.stops.forEach(st => rows.push({ k: 's', s: st.s, st }));
+    rows.sort((a, b) => a.s - b.s || (a.k === 'm' ? -1 : 1));
+    el.stepsTitle.textContent = r.name;
+    el.stepsList.innerHTML = '';
+    let prevM = 0;
+    rows.forEach(row => {
+      const b = document.createElement('button'); b.className = 'step' + (row.k === 's' ? ' stop' : '');
+      if (row.k === 'm') {
+        const m = row.m, gap = m.s - prevM; prevM = m.s;
+        b.innerHTML = '<span class="sic">' + svg(iconFor(m), 24) + '</span><span class="grow"><span class="t">' + esc(describe(m)) + '</span><br><span class="s">' + (m.type === 'depart' ? 'Partenza' : 'dopo ' + fmtDist(gap)) + '</span></span><span class="at">' + fmtKm(m.s) + '</span>';
+      } else {
+        b.innerHTML = '<span class="sic">' + svg('bus', 20) + '</span><span class="grow"><span class="t">' + esc(row.st.name) + '</span></span><span class="at">' + fmtKm(row.s) + '</span>';
+      }
+      b.onclick = () => goTo(row.s);
+      el.stepsList.appendChild(b);
+    });
+    el.stepsHelp.textContent = 'Le uscite delle rotatorie sono stimate dalla forma del percorso: controlla sempre la segnaletica. I nomi delle vie vengono da OpenStreetMap e possono mancare o essere imprecisi.';
+  }
+  function openSteps() { renderSteps(); openDrawer(el.drawerSteps); }
+  function goTo(s) {
+    closeDrawer(el.drawerSteps);
+    const r = S.cur.route;
+    if (S.mode === 'nav' && S.sim) { seekSim(s / r.length); return; }
+    if (S.mode === 'nav') return;
+    const m = mercAt(r, s); focusAt(m[0], m[1], 17);
+  }
+
+  /* ---------- guida ---------- */
+  function showMode() {
+    const nav = S.mode === 'nav';
+    el.topbar.hidden = nav; el.homeBottom.hidden = nav; el.navTop.hidden = !nav; el.navBottom.hidden = !nav;
+    el.simPanel.hidden = !(nav && S.sim);
+    setAnchor(); needs = true;
+  }
+  function startNav(kind) {
+    const l = S.cur; if (!l) return;
+    focusPt = null; rejoinPt = null; S.nav = new Navigator(l.route); S.follow = true; S.info = null; S.mode = 'nav';
+    el.btnRecenter.hidden = true; veh.ready = false;
+    const r = l.route, p0 = mercAt(r, 0);
+    veh.tmx = veh.mx = p0[0]; veh.tmy = veh.my = p0[1]; veh.thd = veh.hd = headingAt(r, 0, 15); veh.ready = true;
+    cam.mx = veh.mx; cam.my = veh.my; cam.zoom = 17.2; cam.bearing = veh.hd; tgt.zoom = 17.2; tgt.bearing = veh.hd;
+    if (kind === 'sim') { S.sim = { s: 0, playing: true, mult: 1, base: 8.33, v: 8.33 }; el.simSeek.value = 0; updateSimUI(); }
+    else S.sim = null;
+    showMode();
+    requestAnimationFrame(() => { setAnchor(); needs = true; });
+    speak(/^linea/i.test(r.name) ? r.name : 'Linea ' + r.name);
+    requestWake();
+    ui = {}; el.offBanner.hidden = true; el.navBanner.hidden = false; el.navThen.hidden = true; el.stopChip.hidden = true;
+    setText(el.etaClock, 'ec', '--:--'); setText(el.etaMeta, 'em', fmtKm(r.length)); setText(el.speedVal, 'sp', '0'); el.progBar.style.width = '0%';
+    if (kind === 'sim') feedSim();
+    else {
+      setHtml(el.navIcon, 'ni', svg('locate', 54)); setText(el.navDist, 'nd', '—'); setText(el.navText, 'nt', 'Cerco il segnale GPS…');
+      startGps();
+    }
+  }
+  function stopNav() {
+    if (S.watch != null) { try { navigator.geolocation.clearWatch(S.watch); } catch (e) { /* ok */ } S.watch = null; }
+    try { speechSynthesis.cancel(); } catch (e) { /* ok */ }
+    releaseWake(); S.mode = 'home'; S.sim = null; S.nav = null; S.info = null; rejoinPt = null; veh.ready = false;
+    showMode(); renderHome();
+  }
+  function startGps() {
+    if (!('geolocation' in navigator)) { toast('Questo dispositivo non fornisce la posizione. Avvio la simulazione.'); S.sim = { s: 0, playing: true, mult: 1, base: 8.33, v: 8.33 }; showMode(); updateSimUI(); feedSim(); return; }
+    toast('Cerco il segnale GPS…');
+    let got = false;
+    S.watch = navigator.geolocation.watchPosition(pos => {
+      got = true; const c = pos.coords;
+      applyInfo(S.nav.update(S.nav.fix(c.latitude, c.longitude, { speed: c.speed, heading: c.heading, acc: c.accuracy, t: pos.timestamp })));
+    }, err => {
+      if (err.code === 1) {
+        stopNav();   // prima si torna alla schermata iniziale, poi si mostra l'avviso nel posto giusto
+        toast(window.isSecureContext ? 'Per guidare serve il permesso di usare la posizione. Abilitalo nelle impostazioni del browser e riprova.' : 'Il GPS funziona solo se l\'app è aperta da un indirizzo https, non dal file scaricato.');
+      }
+      else if (!got) toast('Segnale GPS non disponibile. Controlla di essere all\'aperto.');
+    }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 25000 });
+  }
+  function feedSim(f) {
+    const sim = S.sim, r = S.cur.route; if (!sim || !S.nav) return;
+    const p = pointAt(r, sim.s), hd = headingAt(r, sim.s, 6);
+    applyInfo(S.nav.update({ x: p.x, y: p.y, speed: sim.v * sim.mult, heading: hd, acc: 3, t: performance.now() }));
+  }
+  function stepSim(dt) {
+    const sim = S.sim; if (S.mode !== 'nav' || !sim || !sim.playing) return;
+    const r = S.cur.route, info = S.info;
+    const k = info && info.next ? clamp(info.dNext / 70, 0.5, 1) : 1;
+    sim.v = sim.base * k;
+    sim.s = Math.min(r.length, sim.s + sim.v * sim.mult * dt);
+    if (sim.s >= r.length) { sim.playing = false; updateSimUI(); }
+    if (document.activeElement !== el.simSeek) el.simSeek.value = Math.round(sim.s / r.length * 1000);
+    feedSim();
+  }
+  function seekSim(frac) {
+    const sim = S.sim; if (!sim) return;
+    const r = S.cur.route; sim.s = clamp(frac, 0, 1) * r.length;
+    S.nav = new Navigator(r); S.nav.s = sim.s;
+    try { speechSynthesis.cancel(); } catch (e) { /* ok */ }
+    feedSim();
+  }
+  function updateSimUI() {
+    const sim = S.sim; if (!sim) return;
+    el.simPlay.innerHTML = svg(sim.playing ? 'pause' : 'play', 20); el.simPlay.setAttribute('aria-label', sim.playing ? 'Pausa' : 'Riprendi');
+    el.simPanel.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(+c.dataset.mult === sim.mult)));
+  }
+
+  let ui = {};
+  function setText(node, key, v) { if (ui[key] !== v) { ui[key] = v; node.textContent = v; } }
+  function setHtml(node, key, v) { if (ui[key] !== v) { ui[key] = v; node.innerHTML = v; } }
+  function applyInfo(info) {
+    S.info = info; const r = S.cur.route;
+    if (info.say.length && !(S.sim && S.sim.mult > 2)) speak(info.say.map(q => q.text).join('. '));
+    const pos = info.pos, ll = r.proj.toLL(pos.x, pos.y), mm = merc(ll[0], ll[1]);
+    veh.tmx = mm[0]; veh.tmy = mm[1];
+    const onRoute = !info.offRoute;
+    veh.thd = onRoute ? headingAt(r, info.s, 6) : pos.heading;
+    tgt.bearing = onRoute ? headingAt(r, info.s + 10, 22) : pos.heading;
+    if (performance.now() > autoZoomUntil) {
+      let z = 17.7 - clamp(info.speed / 20, 0, 1) * 1.1;
+      if (info.dNext < 160 && info.next.type !== 'arrive') z = Math.max(z, 18.0);
+      tgt.zoom = z;
+    }
+    rejoinPt = null;
+    if (info.offRoute && info.rejoin) { const q = r.proj.toLL(info.rejoin.x, info.rejoin.y), qm = merc(q[0], q[1]); rejoinPt = { mx: qm[0], my: qm[1] }; }
+    needs = true;
+    updateNavUI(info);
+  }
+  function updateNavUI(info) {
+    const r = S.cur.route, next = info.next;
+    el.navBanner.hidden = info.offRoute; el.offBanner.hidden = !info.offRoute;
+    if (info.offRoute) {
+      setText(el.offDist, 'offd', info.rejoin ? fmtDist(info.rejoin.dist) : '…');
+      if (info.rejoin && info.pos) {
+        const rot = normAngle(bearingXY(info.rejoin.x - info.pos.x, info.rejoin.y - info.pos.y) - (info.pos.heading || 0));
+        setHtml(el.offArrow, 'offa', svg('straight', 52, 'style="transform:rotate(' + Math.round(rot) + 'deg)"'));
+      }
+    } else {
+      setHtml(el.navIcon, 'ni', svg(iconFor(next), 54));
+      setText(el.navDist, 'nd', fmtDist(info.dNext));
+      setText(el.navText, 'nt', describe(next));
+    }
+    if (info.then && !info.offRoute) setHtml(el.navThen, 'th', 'Poi ' + svg(iconFor(info.then.m), 18) + ' ' + esc(lc(describe(info.then.m))) + ' · ' + fmtDist(info.then.d)); else setHtml(el.navThen, 'th', '');
+    el.navThen.hidden = !(info.then && !info.offRoute);
+    const ns = info.nextStop;
+    if (ns && ns.d < 1500 && !info.offRoute) { setHtml(el.stopChip, 'sc', svg('bus', 18) + '<span><b>' + esc(ns.stop.name) + '</b> · ' + fmtDist(ns.d) + '</span>'); el.stopChip.hidden = false; }
+    else { el.stopChip.hidden = true; ui.sc = ''; }
+    setText(el.speedVal, 'sp', String(Math.round(info.speed * 3.6)));
+    const eta = new Date(Date.now() + info.etaSec * 1000);
+    setText(el.etaClock, 'ec', info.remaining < 30 ? 'Arrivo' : eta.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }));
+    setText(el.etaMeta, 'em', fmtDur(info.etaSec) + ' · ' + fmtKm(info.remaining));
+    el.progBar.style.width = (info.pct * 100).toFixed(1) + '%';
+  }
+
+  /* ---------- ciclo di disegno ---------- */
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    stepSim(dt);
+    if (S.mode === 'nav' && veh.ready) {
+      const k = 1 - Math.exp(-dt / (S.sim ? 0.06 : 0.45));
+      const dx = veh.tmx - veh.mx, dy = veh.tmy - veh.my, dh = normAngle(veh.thd - veh.hd);
+      if (Math.abs(dx) > 1e-10 || Math.abs(dy) > 1e-10 || Math.abs(dh) > 0.05) {
+        veh.mx += dx * k; veh.my += dy * k; veh.hd += dh * k; needs = true;
+      }
+      if (following()) {
+        if (cam.mx !== veh.mx || cam.my !== veh.my) { cam.mx = veh.mx; cam.my = veh.my; needs = true; }
+        const kb = 1 - Math.exp(-dt / 0.5), kz = 1 - Math.exp(-dt / 0.7), db = normAngle(tgt.bearing - cam.bearing), dz = tgt.zoom - cam.zoom;
+        if (Math.abs(db) > 0.02) { cam.bearing += db * kb; needs = true; }
+        if (Math.abs(dz) > 0.002 && performance.now() > autoZoomUntil) { cam.zoom += dz * kz; needs = true; }
+      }
+    }
+    if (needs) render();
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- eventi ---------- */
+  function wire() {
+    el.btnLines.onclick = () => { renderLines(); openDrawer(el.drawerLines); };
+    el.closeLines.onclick = () => closeDrawer(el.drawerLines);
+    el.closeSteps.onclick = () => closeDrawer(el.drawerSteps);
+    el.btnImport.onclick = () => el.fileInput.click();
+    el.fileInput.onchange = async () => { const fs = [...el.fileInput.files]; el.fileInput.value = ''; if (fs.length) await importFiles(fs); };
+    el.btnStart.onclick = () => startNav(PREVIEW ? 'sim' : 'gps');
+    el.btnPreview.onclick = () => startNav('sim');
+    el.btnSteps.onclick = openSteps; el.btnStepsNav.onclick = openSteps;
+    el.btnExit.onclick = stopNav;
+    el.zIn.onclick = () => zoomBy(0.7); el.zOut.onclick = () => zoomBy(-0.7);
+    el.btnRecenter.onclick = () => { S.follow = true; autoZoomUntil = 0; el.btnRecenter.hidden = true; needs = true; };
+    el.btnMute.onclick = () => {
+      S.muted = !S.muted; el.btnMute.innerHTML = svg(S.muted ? 'mute' : 'volume', 24);
+      el.btnMute.setAttribute('aria-label', S.muted ? 'Attiva la voce' : 'Disattiva la voce');
+      if (S.muted) { try { speechSynthesis.cancel(); } catch (e) { /* ok */ } }
+      toast(S.muted ? 'Voce disattivata' : 'Voce attivata');
+    };
+    el.simPlay.onclick = () => { const sim = S.sim; if (!sim) return; if (!sim.playing && sim.s >= S.cur.route.length - 1) seekSim(0); sim.playing = !sim.playing; updateSimUI(); };
+    el.simPanel.querySelectorAll('.chip').forEach(c => { c.onclick = () => { S.sim.mult = +c.dataset.mult; updateSimUI(); }; });
+    el.simSeek.oninput = () => seekSim(+el.simSeek.value / 1000);
+    window.addEventListener('resize', () => { resize(); if (S.mode === 'home') fitRoute(); });
+    if (window.ResizeObserver) new ResizeObserver(() => { resize(); }).observe($('app'));
+    try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme); } catch (e) { /* ok */ }
+    new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style', 'class'] });
+  }
+
+  async function init() {
+    hydrate(document); readTheme(); wire();
+    await DB.open();
+    const demo = demoRoute();
+    S.lines.push({ id: 'demo', route: demo, fileId: null, fileName: '' });
+    for (const p of PRESETS) {
+      try {
+        let streets = {}; try { streets = JSON.parse(store.get('lg-streets-' + p.id) || '{}') || {}; } catch (e) { /* ok */ }
+        S.lines.push(...linesFromParsed(parseGeoText(p.text), { id: p.id, name: p.name, preset: true, streets }));
+      } catch (e) { /* linea non leggibile: ignorata */ }
+    }
+    try {
+      const recs = (await DB.all()).sort((a, b) => a.added - b.added);
+      for (const rec of recs) S.lines.push(...linesFromParsed(parseGeoText(rec.text), rec));
+    } catch (e) { /* archivio non leggibile: resta la linea di prova */ }
+    const saved = store.get('lg-cur');
+    S.cur = S.lines.find(l => l.id === saved) || S.lines[S.lines.length > 1 ? 1 : 0];
+    renderLines(); renderHome(); resize(); fitRoute(); resolveStreets(S.cur);
+    requestAnimationFrame(t => { last = t; tick(t); });
+  }
+  init();
+})();
+
+</script>
+</body></html>
